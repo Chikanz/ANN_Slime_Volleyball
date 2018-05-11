@@ -1,11 +1,17 @@
-public class PhysicsObject extends Object{
+public abstract class PhysicsObject extends Object{
 
     protected PVector Position = new PVector();
-    protected PVector Velocity = new PVector();
+    public PVector Velocity = new PVector();
     protected PVector Acceleration = new PVector();
 
-    static final float Gravity = 0.3f;
+    public String tag;
+
+    float Gravity = 0.3f;
     static final float Ground = 450;
+
+    public float radius = -1;
+
+    protected boolean Kinematic = false;
 
 
     public PhysicsObject () 
@@ -15,12 +21,13 @@ public class PhysicsObject extends Object{
 
     public void Update()
     {
-        //Everything is affected by gravity
+        //gravity effects non kinematic objects
+        if(Kinematic) return;
+        
         if(Position.y < Ground)
             AddForce(new PVector(0,Gravity));
         else
             Position.y = Ground;
-
 
         //Add acceleration to velocity
         Velocity.add(Acceleration);
@@ -28,6 +35,13 @@ public class PhysicsObject extends Object{
 
         //Add velocity to position
         Position.add(Velocity);
+    }
+
+    protected void DrawVelocity()
+    {
+        //Draw dis arrow
+        stroke(5);
+        line(Position.x,Position.y,(Position.x + Velocity.x), (Position.y + Velocity.y));
     }
 
     public void AddForce(PVector force)
@@ -42,6 +56,13 @@ public class PhysicsObject extends Object{
 
         Velocity.x *= x;
         Velocity.y *= y;
+    }
+
+    protected abstract void OnCollision(PhysicsObject other);
+
+    public PVector GetPos()
+    {
+        return Position.copy();
     }
 
 }
