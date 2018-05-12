@@ -48,7 +48,7 @@ void draw()
     {
         boolean p1Won = ball.PlayerWon();
         RM.Score(p1Won);
-        delay(1000);
+        //delay(1000);
         Reset();
     }
 }
