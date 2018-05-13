@@ -54,7 +54,11 @@ public class Ball extends PhysicsObject
         Stop(0,0);
         int playerNo = PlayerWon() ? 0 : 1;
         Position.y = PhysicsObject.Ground - 80;
-        Position.x = (width/2)/2 * ((playerNo + 1)) * 2;
+
+        if(playerNo == 0)
+            Position.x = (width/2)/2;
+        else
+            Position.x = (width/2/2) + width/2;
     }
 
 

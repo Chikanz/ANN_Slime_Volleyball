@@ -6,9 +6,13 @@ public class NeuralNetwork extends Object
     int numHid;
     int numOut;
 
+    public DNA brain;
+
     private ArrayList<InputNeuron> Inputs = new ArrayList<InputNeuron>();
     private ArrayList<Neuron> Hidden = new ArrayList<Neuron>();
     private ArrayList<Neuron> Outputs = new ArrayList<Neuron>();
+
+    private ArrayList<NNConnection> globalConnections = new ArrayList<NNConnection>();
 
     public NeuralNetwork (int input, int hidden, int output)
     {
@@ -29,7 +33,7 @@ public class NeuralNetwork extends Object
 
         for (int i = 0; i < numOut; i++) 
         {
-            Hidden.add(new Neuron());
+            Outputs.add(new Neuron());
         }
 
         //Add in biases (use extreme values to optimize sigmoid)
@@ -44,6 +48,8 @@ public class NeuralNetwork extends Object
                 NNConnection c = new NNConnection(Inputs.get(i), Hidden.get(j));
                 Inputs.get(i).AddConnection(c);
                 Hidden.get(j).AddConnection(c);
+
+                globalConnections.add(c);
             }
         }
 
@@ -55,13 +61,17 @@ public class NeuralNetwork extends Object
                 NNConnection c = new NNConnection(Hidden.get(i), Outputs.get(j));
                 Hidden.get(i).AddConnection(c);
                 Outputs.get(j).AddConnection(c);
+
+                globalConnections.add(c);
             }
         }
+
+        println(globalConnections.size());
     }
 
     public float[] FeedForward(float[] inputs)
-    {
-        assert inputs.length == Inputs.size(); //Sanity check
+    {        
+        assert inputs.length == Inputs.size() - 1; //Sanity check
 
         //Punch in inputs
         for (int i = 0; i < inputs.length; i++) 
@@ -85,4 +95,17 @@ public class NeuralNetwork extends Object
         return output;
     }
 
+    public void LoadBrain(DNA d)
+    {
+        brain = d;
+        for(int i = 0; i < globalConnections.size(); i++)
+        {
+            globalConnections.get(i).SetWeight(d.weights[i]);
+        }
+    }
+
+    public DNA GetBrain()
+    {        
+        return brain;
+    }
 }

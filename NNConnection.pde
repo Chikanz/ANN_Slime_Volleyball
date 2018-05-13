@@ -8,6 +8,7 @@ public class NNConnection extends Object
     {
         from = _from;
         to = _to;
+        weight = random(1.0f); //initalize with a random weight
     }
 
     void SetWeight(float w)

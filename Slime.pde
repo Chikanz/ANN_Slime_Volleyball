@@ -2,11 +2,10 @@ import java.util.*;
 
 public class Slime extends PhysicsObject
 {
-    private float speed = 10;
+    private float speed = 7;
     private int playerNo;
     private float thiccness = 100;
-
-    private int moveForce;
+    
     private int jumpForce = 7;
     private Boolean canJump = true;
 
@@ -17,6 +16,13 @@ public class Slime extends PhysicsObject
 
     private float hitForce = 6;
 
+    //Stats
+    public float rallySecs = 0;
+    public int touches = 0;
+    public int score = 0;
+    public float movedelta = 0;
+    public float otherMovedelta = 0;
+
     ArrayList barriers = new ArrayList();
 
     public Slime (int player) 
@@ -25,7 +31,6 @@ public class Slime extends PhysicsObject
         radius = thiccness/2;
         playerNo = player;
         Position.y = Ground;
-        Position.x = (width/2)/2 * (playerNo + 1);
 
         //add in barriers
         barriers.add(new Barrier(thiccness/2, false));
@@ -38,7 +43,7 @@ public class Slime extends PhysicsObject
             barriers.add(new Barrier(width/2 + thiccness/2, false));
     }
 
-    public void Update()
+    public void Update(PVector lookAtTarget)
     {
         //Make sure to stop velocity before it's added in parent's update
         CheckBarriers();
@@ -63,7 +68,11 @@ public class Slime extends PhysicsObject
         else
             ellipse(Position.x - 25, Position.y - 20, 20, 20);
 
-        //DrawVelocity();        
+        //DrawVelocity();    
+
+        movedelta += Math.abs(Velocity.x);
+
+        LookAt(lookAtTarget);
     }
 
     //draw pupil
@@ -110,6 +119,7 @@ public class Slime extends PhysicsObject
     {
         if(canJump)
         {
+            //println("jump");
             canJump = false;
             AddForce(new PVector(0,-jumpForce));
         }
@@ -158,6 +168,8 @@ public class Slime extends PhysicsObject
         //Collision with ball
         if(other.tag == "Ball")
         {
+            touches++; //stats
+
             if(other.Velocity.mag() > 1)
                 other.Stop(0,0);
 
@@ -176,13 +188,25 @@ public class Slime extends PhysicsObject
     void Reset()
     {
         Stop(0,0);
-        Position.x = (width/2)/2 * ((playerNo + 1)) * 2;
+        if(playerNo == 0)
+            Position.x = (width/2)/2;
+        else
+            Position.x = (width/2/2) + width/2;
         Position.y = Ground;
+    }
+
+    void ResetStats()
+    {
+        rallySecs = 0;
+        touches = 0;
+        score = 0;
+        movedelta = 0;
+        otherMovedelta = 0;
     }
 }
 
-public class Barrier extends Object {
-
+public class Barrier extends Object 
+{
     public float extent;
     public boolean greaterThan;
 
@@ -191,5 +215,4 @@ public class Barrier extends Object {
         extent = _x;
         greaterThan = _greaterThan;
     }
-
 }
