@@ -4,11 +4,24 @@ public class DNA
 
     private float fitness = 1;    
 
-    public float MutateChance = 0.5f;
+    public float MutateChance = 0.4f;
+
+    public int noWeights;
 
     public DNA (int noWeights) 
     {
+        this.noWeights = noWeights;
         weights = new float[noWeights];
+    }
+
+    //Copy constructor
+    public DNA (DNA d) 
+    {
+        this(d.noWeights);
+        for(int i = 0; i < d.weights.length; i++)
+        {
+            weights[i] = d.weights[i];
+        }
     }
 
     void ClearFitness()
@@ -22,13 +35,13 @@ public class DNA
         //Gates
         float ral = 0;
         float othermoveMulti = otherMoveDelta > 200 ? 1 : 0;
-        float myMoveMulti = movedelta > 200 ? 1 : 0;
+        float myMoveMulti = movedelta > 50 ? 1 : 0;
         float scoremulti = constrain(playerScore - opponentScore, 0,99);
 
-        fitness += (touches * 4 * myMoveMulti);// + (ral * 1) + (movedelta * 0.001f) + (playerScore * 2);
+        fitness += (touches * 1 * myMoveMulti);// + (ral * 1) + (movedelta * 0.001f) + (playerScore * 2);
         //fitness += (touches * 0.7f * myMoveMulti) + (ral * 1) + (movedelta * 0.001f) + (playerScore * 2);
         
-        println((touches * 0.7f * myMoveMulti) + " " + (ral * 1) + " " +  (movedelta * 0.001f) + " " + (scoremulti * 2));
+        println((touches * 1 * myMoveMulti) + " " + (ral * 1) + " " +  (movedelta * 0.001f) + " " + (scoremulti * 2));
     }
 
     void NormalizeFitness(float total)

@@ -1,5 +1,8 @@
 public class Ball extends PhysicsObject
 {    
+
+    int trainingCounter = 0;
+
     public Ball ()
     {
         tag = "Ball";
@@ -7,7 +10,7 @@ public class Ball extends PhysicsObject
         Gravity = 0.2;
 
         Position.x = (width/2)/2;
-        Reset();
+        //Reset(false);
     }
 
     void Update()
@@ -49,16 +52,28 @@ public class Ball extends PhysicsObject
     }
 
     //called at the start of a new round
-    void Reset()
+    void Reset(boolean training)
     {
         Stop(0,0);
-        int playerNo = PlayerWon() ? 0 : 1;
-        Position.y = PhysicsObject.Ground - 80;
+        Position.y = PhysicsObject.Ground - 150;
 
-        if(playerNo == 0)
-            Position.x = (width/2)/2;
+        if(training)
+        {
+            Position.x = width/2;
+            trainingCounter++;
+            float sideForce = trainingCounter % 2 == 0 ? -1 : 1;
+                AddForce(new PVector(sideForce * random(1,5),-random(5,10))); 
+        }
         else
-            Position.x = (width/2/2) + width/2;
+        {
+            int playerNo = PlayerWon() ? 0 : 1;
+            //Position.y = PhysicsObject.Ground - 150;
+
+            if(playerNo == 0)
+                Position.x = (width/2)/2;
+            else
+                Position.x = (width/2/2) + width/2;
+        }
     }
 
 

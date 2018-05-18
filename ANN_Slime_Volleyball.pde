@@ -18,6 +18,25 @@ boolean firstRally = false;
 
 int FrameyRate = 600;
 
+final PVector[] normalizeVals =
+{
+    new PVector(43, 357),   //p1 X
+    new PVector(350, 450),  //p1 Y
+    new PVector(-7, 7),     //p1 X delta
+    new PVector(-7, 7),     //p1 Y delta
+
+    //new PVector(-43, -357),   //p2 X
+    //new PVector(350, 450),  //p2 Y
+    //new PVector(-7, 7),     //p2 X delta
+    //new PVector(-7, 7),     //p2 Y delta
+
+    new PVector(-450,450),   //Ball X
+    new PVector(450,50),   //Ball Y
+
+    new PVector(-10, 10),    //ball X delta
+    new PVector(-10, 10),    //ball Y delta
+};
+
 void setup() 
 {
   // Window size
@@ -33,7 +52,7 @@ void setup()
   CM = new CollisionManager();
   RM = new RoundManager();
 
-  //Add physics objects
+  //Add physics objects collision
   CM.AddObject(s1);
   CM.AddObject(s2);
   CM.AddObject(ball);
@@ -42,6 +61,8 @@ void setup()
   NN2 = new NeuralNetwork(12,8,3);
 
   GT = new GeneticTrainer();
+  //GT.Read(131);
+  //frameRate(10);
 }
 
 void draw()
@@ -49,7 +70,8 @@ void draw()
     if(gameOn)
     {
         GameLoop();
-        if(gameFrames > 1200) gameOn = false; //End game
+        //This creates matches that are dependent on the opponent's skill
+        if(gameFrames > 5000) gameOn = false; //End game 
     }
     else if(traning)
     {
@@ -148,19 +170,35 @@ void Reset()
 {
     s1.Reset();
     s2.Reset();
-    ball.Reset();
+    ball.Reset(true);
 }
 
 void AIStep(Slime player, Slime opponent, int playerNO)
 {
+    //Feed inputs
     float[] in = {
         Math.abs(width/2 - player.GetPos().x), player.GetPos().y, player.Velocity.x, player.Velocity.y,
-        -Math.abs(width/2 - opponent.GetPos().x), opponent.GetPos().y, opponent.Velocity.x, opponent.Velocity.y, 
-        width/2 - ball.GetPos().x, ball.GetPos().y, ball.Velocity.x, ball.Velocity.x,
+        //-Math.abs(width/2 - opponent.GetPos().x), opponent.GetPos().y, opponent.Velocity.x, opponent.Velocity.y, 
+        width/2 - ball.GetPos().x, ball.GetPos().y, ball.Velocity.x, ball.Velocity.y
         };
 
-    //Flip ball x sign if we're on player2's side
-    if(playerNO == 1) in[8] = -in[8];
+    //Flip ball x value signs if we're on player2's side
+    if(playerNO == 1) 
+    {
+        in[2] = -in[2]; //Player x velocity 
+        //in[6] = -in[6]; //Opponent x velocity
+        //in[8] = -in[8]; //Ball X 
+        //in[10] = -in[10]; //Ball X velocity 
+
+        in[4] = -in[4]; //Ball X 
+        in[8] = -in[8]; //Ball X velocity 
+    }
+
+    //Normalize
+    for(int i = 0; i < in.length; i++)
+    {
+        in[i] = map(in[i], normalizeVals[i].x, normalizeVals[i].y, -1, 1);
+    }
 
     String[] InHeaders =
     {
@@ -168,36 +206,25 @@ void AIStep(Slime player, Slime opponent, int playerNO)
         "p1 y",
         "p1 xvel",
         "p1 yvel",
-        "p2 x",
-        "p2 y",
-        "p2 xvel",
-        "p2 yvel",
+        //"p2 x",
+        //"p2 y",
+        //"p2 xvel",
+        //"p2 yvel",
         "ball x",
         "ball y",
         "ball xvel",
         "ball yvel",
     };
     
-    if(in[8] < 0) player.rallySecs += millis();
-
-    //if(in[8] < 0 && lastBallX[playerNO] > 0 || in[8] > 0 && lastBallX[playerNO] < 0)
-    //{
-    //    s1.rallySecs += 1;
-    //    println(in[8] + " " + lastBallX[playerNO]);
-    //}
-
-    //lastBall[playerNO] = in[8];
-
-    player.otherMovedelta += Math.abs(opponent.Velocity.x);
+    //player.otherMovedelta += Math.abs(opponent.Velocity.x);
 
     
     float[] out = playerNO == 0 ? NN1.FeedForward(in) : NN2.FeedForward(in);      
 
-    //for(int i = 0; i <  in.length; i++)
-    //{        
-    //    text(playerNO + " " + InHeaders[i] + " " + in[i], ((width - 200) * playerNO) + 100 , (10 * i) + 100);
-    //}
-    //println("----");
+    for(int i = 0; i <  in.length; i++)
+    {        
+        text(playerNO + " " + InHeaders[i] + " " + in[i], ((width - 200) * playerNO) + 100 , (10 * i) + 100);
+    }    
 
     //Swap sides
     if(playerNO == 0)
