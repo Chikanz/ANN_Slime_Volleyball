@@ -8,6 +8,8 @@ public class NeuralNetwork extends Object
 
     public DNA brain;
 
+    public int GlobalConnectionCount;
+
     private ArrayList<InputNeuron> Inputs = new ArrayList<InputNeuron>();
     private ArrayList<Neuron> Hidden = new ArrayList<Neuron>();
     private ArrayList<Neuron> Outputs = new ArrayList<Neuron>();
@@ -66,7 +68,8 @@ public class NeuralNetwork extends Object
             }
         }
 
-        println(globalConnections.size());
+        println("GLobal connection size is :" + globalConnections.size());
+        GlobalConnectionCount = globalConnections.size();
     }
 
     public float[] FeedForward(float[] inputs)

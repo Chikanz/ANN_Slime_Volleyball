@@ -1,7 +1,7 @@
 public class Ball extends PhysicsObject
 {    
 
-    int trainingCounter = 0;
+    public int trainingCounter = 0;
 
     public Ball ()
     {
@@ -10,7 +10,7 @@ public class Ball extends PhysicsObject
         Gravity = 0.2;
 
         Position.x = (width/2)/2;
-        //Reset(false);
+        Reset(true);
     }
 
     void Update()
@@ -31,7 +31,23 @@ public class Ball extends PhysicsObject
         {
             Position.x = width;
             Velocity.x = -Velocity.x;
+        }        
+
+        //Net p2
+        if(Position.x >= width/2 && Position.x <= width/2 + 10 &&  Position.y > Ground - 50 )
+        {
+            Position.x = width/2 + 10;
+            Velocity.x = -Velocity.x;
         }
+
+        //Net p1
+        if(Position.x <= width/2 && Position.x >= width/2 - 10 &&  Position.y > Ground - 50 )
+        {
+            Position.x = width/2 - 10;
+            Velocity.x = -Velocity.x;
+        }
+
+
 
         DrawVelocity();
     }
@@ -60,7 +76,7 @@ public class Ball extends PhysicsObject
         if(training)
         {
             Position.x = width/2;
-            trainingCounter++;
+            //trainingCounter++; //modulate sides
             float sideForce = trainingCounter % 2 == 0 ? -1 : 1;
                 AddForce(new PVector(sideForce * random(1,5),-random(5,10))); 
         }

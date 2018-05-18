@@ -9,6 +9,8 @@ public class Slime extends PhysicsObject
     private int jumpForce = 7;
     private Boolean canJump = true;
 
+    Ball myBall = null;
+
     //movement
     Boolean right = false;
     Boolean left = false;
@@ -21,7 +23,7 @@ public class Slime extends PhysicsObject
     public int touches = 0;
     public int score = 0;
     public float movedelta = 0;
-    public float otherMovedelta = 0;
+    //public float otherMovedelta = 0;
 
     ArrayList barriers = new ArrayList();
 
@@ -38,9 +40,9 @@ public class Slime extends PhysicsObject
 
         //Net
         if(player == 0)
-            barriers.add(new Barrier(width/2 - thiccness/2,true));
+            barriers.add(new Barrier(width/2 - thiccness/2 - 5,true));
         else
-            barriers.add(new Barrier(width/2 + thiccness/2, false));
+            barriers.add(new Barrier(width/2 + thiccness/2 + 5, false));
     }
 
     public void Update(PVector lookAtTarget)
@@ -167,7 +169,7 @@ public class Slime extends PhysicsObject
     {
         //Collision with ball
         if(other.tag == "Ball")
-        {
+        {            
             touches++; //stats
 
             if(other.Velocity.mag() > 1)
@@ -200,8 +202,7 @@ public class Slime extends PhysicsObject
         rallySecs = 0;
         touches = 0;
         score = 0;
-        movedelta = 0;
-        otherMovedelta = 0;
+        movedelta = 0;        
     }
 }
 

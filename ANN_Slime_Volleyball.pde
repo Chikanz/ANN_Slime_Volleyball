@@ -1,7 +1,9 @@
 Slime s1;
 Slime s2;
 Scene scene;
-Ball ball;
+//Ball ball;
+Ball p1ball;
+Ball p2ball;
 CollisionManager CM;
 RoundManager RM;
 NeuralNetwork NN1;
@@ -48,30 +50,36 @@ void setup()
   s1 = new Slime(0);
   s2 = new Slime(1);
   scene = new Scene();
-  ball = new Ball();
+  p1ball = new Ball();
+  p2ball = new Ball();
+  p2ball.trainingCounter = 1;
   CM = new CollisionManager();
   RM = new RoundManager();
 
   //Add physics objects collision
   CM.AddObject(s1);
   CM.AddObject(s2);
-  CM.AddObject(ball);
+  CM.AddObject(p1ball);
+  CM.AddObject(p2ball);
 
-  NN1 = new NeuralNetwork(12,8,3);
-  NN2 = new NeuralNetwork(12,8,3);
+  //131
+  //NN1 = new NeuralNetwork(12,8,3);
+  //NN2 = new NeuralNetwork(12,8,3);
 
-  GT = new GeneticTrainer();
-  //GT.Read(131);
-  //frameRate(10);
+  //
+  NN1 = new NeuralNetwork(8,7,3);
+  NN2 = new NeuralNetwork(8,7,3);
+
+  GT = new GeneticTrainer(NN1.GlobalConnectionCount);
+  GT.Read(NN1.GlobalConnectionCount);
 }
 
 void draw()
 {
     if(gameOn)
     {
-        GameLoop();
-        //This creates matches that are dependent on the opponent's skill
-        if(gameFrames > 5000) gameOn = false; //End game 
+        GameLoop();        
+        if(gameFrames > 1000) gameOn = false; //End round 
     }
     else if(traning)
     {
@@ -83,8 +91,8 @@ void draw()
             DNA d1 = NN1.GetBrain();
             DNA d2 = NN2.GetBrain();                        
 
-            d1.AddFitness(s1.touches, s1.rallySecs, s1.movedelta, s1.otherMovedelta, RM.p1Score, RM.p2Score);
-            d2.AddFitness(s2.touches, s2.rallySecs, s2.movedelta, s1.otherMovedelta, RM.p2Score, RM.p1Score);
+            d1.AddFitness(s1.touches, s1.rallySecs, s1.movedelta, s1.score, RM.p2Score);
+            d2.AddFitness(s2.touches, s2.rallySecs, s2.movedelta, s2.score, RM.p1Score);
             
             s1.ResetStats();
             s2.ResetStats();
@@ -98,10 +106,17 @@ void draw()
         }
         
         DNA p1 = GT.GetNext();
-        DNA p2 = GT.GetNext();
-        
         NN1.LoadBrain(p1);
-        NN2.LoadBrain(p2);
+
+        if(GT.HasNext())
+        {
+            DNA p2 = GT.GetNext();
+            NN2.LoadBrain(p2);
+        }
+        else
+        {
+            NN2.LoadBrain(new DNA(NN1.GlobalConnectionCount));
+        }
 
         gameFrames = 0;
 
@@ -122,24 +137,52 @@ void GameLoop()
     scene.DrawEnv();
 
     //AI 
-    AIStep(s1,s2, 0);
-    AIStep(s2,s1, 1);
+    AIStep(s1,s2, p1ball, 0);
+    AIStep(s2,s1, p2ball, 1);
 
-    s1.Update(ball.GetPos());    
-    s2.Update(ball.GetPos());  
+    s1.Update(p1ball.GetPos());    
+    s2.Update(p1ball.GetPos());  
 
-    ball.Update();  
+    p1ball.Update();  
+    p2ball.Update();  
 
     CM.SendCollisionMessages();  
     RM.Update();
 
-    //Check round over
-    if(ball.HitFloor())
+    //reset balls
+    if(p1ball.HitFloor()) 
     {
-        boolean p1Won = ball.PlayerWon();
-        gameOn = !RM.Score(p1Won);
-        Reset();
+        s1.score += 1;
+        p1ball.Reset(true);
     }
+    
+    if(p2ball.HitFloor())
+    {
+        s2.score += 1;
+        p2ball.Reset(true);
+    }
+
+    //Add score
+    if(p1ball.GetPos().x > width/2 + 10)
+    {
+        s1.rallySecs++; //Add a rally point
+        p1ball.Reset(true);
+    }
+
+    if(p2ball.GetPos().x < width/2 - 10)
+    {
+        s2.rallySecs++; //Add a rally point
+        p2ball.Reset(true);
+    }
+
+    //Check round over
+    //if(ball.HitFloor())
+    //{
+    //    //boolean p1Won = ball.PlayerWon();
+    //    //gameOn = !RM.Score(p1Won); //For competitive
+    //    //Reset(); //Competitive
+    //    ball.Reset(true);
+    //}
 }
 
 //Slime movement
@@ -170,16 +213,16 @@ void Reset()
 {
     s1.Reset();
     s2.Reset();
-    ball.Reset(true);
+    //ball.Reset(true);
 }
 
-void AIStep(Slime player, Slime opponent, int playerNO)
+void AIStep(Slime player, Slime opponent, Ball b, int playerNO)
 {
     //Feed inputs
     float[] in = {
         Math.abs(width/2 - player.GetPos().x), player.GetPos().y, player.Velocity.x, player.Velocity.y,
         //-Math.abs(width/2 - opponent.GetPos().x), opponent.GetPos().y, opponent.Velocity.x, opponent.Velocity.y, 
-        width/2 - ball.GetPos().x, ball.GetPos().y, ball.Velocity.x, ball.Velocity.y
+        width/2 - b.GetPos().x, b.GetPos().y, b.Velocity.x, b.Velocity.y
         };
 
     //Flip ball x value signs if we're on player2's side
@@ -191,7 +234,7 @@ void AIStep(Slime player, Slime opponent, int playerNO)
         //in[10] = -in[10]; //Ball X velocity 
 
         in[4] = -in[4]; //Ball X 
-        in[8] = -in[8]; //Ball X velocity 
+        in[6] = -in[6]; //Ball X velocity 
     }
 
     //Normalize
@@ -218,13 +261,13 @@ void AIStep(Slime player, Slime opponent, int playerNO)
     
     //player.otherMovedelta += Math.abs(opponent.Velocity.x);
 
-    
+    //Feed input into network
     float[] out = playerNO == 0 ? NN1.FeedForward(in) : NN2.FeedForward(in);      
 
-    for(int i = 0; i <  in.length; i++)
-    {        
-        text(playerNO + " " + InHeaders[i] + " " + in[i], ((width - 200) * playerNO) + 100 , (10 * i) + 100);
-    }    
+    //for(int i = 0; i <  in.length; i++)
+    //{        
+    //    text(playerNO + " " + InHeaders[i] + " " + in[i], ((width - 200) * playerNO) + 100 , (10 * i) + 100);
+    //}    
 
     //Swap sides
     if(playerNO == 0)

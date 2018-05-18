@@ -14,10 +14,15 @@ public class GeneticTrainer extends Object
 
     int generation = 0;  
 
+    int connectionCount;
+
+    int randomCount = 2;
+
     //boolean Eliteism = false;
 
-    public GeneticTrainer()
+    public GeneticTrainer(int connections)
     {
+        connectionCount = connections;
         InitalizePopulation();        
         //NextGeneration();
     }
@@ -27,7 +32,7 @@ public class GeneticTrainer extends Object
     {
         for(int i = 0; i < populationSize; i++)
         {
-          DNA d = new DNA(131);
+          DNA d = new DNA(connectionCount);
           d.Randomize();
           population.add(d);
         }
@@ -40,13 +45,6 @@ public class GeneticTrainer extends Object
     {
         generation++;
 
-        //Sum fitness
-        float total = 0;
-        for(int i = 0; i < populationSize; i++)
-        {
-            total += population.get(i).GetFitness();
-        }        
-
         //Sort list
         Collections.sort(population, new Comparator<DNA>() 
         {
@@ -58,29 +56,31 @@ public class GeneticTrainer extends Object
             }
         });    
 
-        
-        println("fittest " +  population.get(0).fitness);
-        println("unfittest " +  population.get(population.size() - 1).fitness);    
+        //println("fittest " +  population.get(0).fitness);
+        //println("unfittest " +  population.get(population.size() - 1).fitness);    
 
         //Print off fitness:
-        TopFitness.add(total/population.size());
+        TopFitness.add(population.get(0).fitness);
         String s = "";
         for(int i = 0 ; i < TopFitness.size(); i++)
         {
-            s += "-" + TopFitness.get(i);
+            s += Math.round(TopFitness.get(i)) + "-";
         }
         println("Graph: " + s);
 
         //Kill off least fittest
-        for(int i = 0; i < 2; i++)
+        for(int i = 0; i < (population.size() - populationSize); i++)
             population.remove(population.size() - 1);
         
-        //Add in randoms just for good luck
         ArrayList<DNA> newPop = new ArrayList<DNA>();
-        DNA d = new DNA(131);
-        d.Randomize();
-        newPop.add(d);
-        //newPop.add(new DNA(131));
+
+        //Add in randoms just for good luck
+        for(int i = 0; i < randomCount; i++)
+        {
+            DNA d = new DNA(connectionCount);
+            d.Randomize();
+            newPop.add(d);        
+        }
 
         //NormalizeFitness(total);
         InitalizeWheel();        
@@ -102,8 +102,8 @@ public class GeneticTrainer extends Object
 
         //Clear population every 2 gens, to keep parents.
         //This way if children perform worse than parents, the parents' good DNA is kept
-        if(generation % 2 == 0)
-            population.clear();
+        //if(generation % 2 == 0)
+        //population.clear();
 
         for(int i = 0; i < newPop.size(); i++)
         {
@@ -120,17 +120,29 @@ public class GeneticTrainer extends Object
     {
         NextList.clear();
         nextCounter = 0;
-        for(int i = 0; i < populationSize; i++)
-        {
-            for(int j = 0; j < populationSize; j++)
-            {
-                //Congratulations, you played yourself
-                if(population.get(i) == population.get(j)) continue;
 
-                NextList.add(population.get(i));
-                NextList.add(population.get(j));
-            }
-        }
+        //For competitive
+        //for(int i = 0; i < populationSize; i++)
+        //{
+        //    for(int j = 0; j < populationSize; j++)
+        //    {
+        //        //Congratulations, you played yourself
+        //        if(population.get(i) == population.get(j)) continue;
+        //
+        //        NextList.add(population.get(i));
+        //        NextList.add(population.get(j));
+        //    }
+        //}
+
+        //Just add population for ball training
+        //Also clear fitness while we're here
+        for(int i = 0; i < population.size(); i++)
+        {
+            DNA d = population.get(i);
+            d.ClearFitness();
+            NextList.add(d);
+        }        
+
         assert NextList.size() > 0;
     }
 
@@ -141,10 +153,11 @@ public class GeneticTrainer extends Object
     
     public DNA GetNext()
     {        
-        assert NextList.size() > 0;        
+        assert NextList.size() > 0;     
         DNA d = NextList.get(nextCounter);
         nextCounter++;
         return d;
+        
     }
 
     void NormalizeFitness(float total)
@@ -184,7 +197,7 @@ public class GeneticTrainer extends Object
        DNA p2 = population.get(n2);
 
        //Random crossover
-        DNA d = new DNA(131);
+        DNA d = new DNA(connectionCount);
         for(int i = 0; i < p1.weights.length; i++)
         {
             //d.weights[i] = random(1) > 0.5 ? p1.weights[i] : p2.weights[i];
@@ -195,8 +208,8 @@ public class GeneticTrainer extends Object
 
     void Write()
     {
-        String[] s = new String[populationSize];
-        for(int i = 0; i < populationSize; i++)
+        String[] s = new String[population.size()];
+        for(int i = 0; i < population.size(); i++)
         {   
             String add = "";
             for(int j = 0; j < population.get(i).weights.length; j++)
