@@ -62,9 +62,13 @@ public class Slime extends PhysicsObject
             canJump = true;
 
         //Draw slime
+        if(playerNo == 0) fill(255,0,0);
+        else fill(0,255,0);
+
         arc(Position.x, Position.y, thiccness, thiccness, PI, TWO_PI, PIE);
 
         //Draw eye base
+        fill(255);
         if(playerNo == 0)
             ellipse(Position.x + 25, Position.y - 20, 20, 20);
         else
@@ -80,6 +84,7 @@ public class Slime extends PhysicsObject
     //draw pupil
     public void LookAt(PVector target)
     {
+        fill(0);
         PVector eyePos = new PVector(Position.x + 25, Position.y - 20);
         if(playerNo == 1) eyePos.x = Position.x - 25; //Flip side for player 2
         PVector look = target.copy().sub(eyePos).normalize().mult(3);

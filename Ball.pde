@@ -18,6 +18,7 @@ public class Ball extends PhysicsObject
         super.Update();
 
         //draw
+        fill(255);
         ellipse(Position.x, Position.y, radius, radius);
 
         //Hit sides
@@ -46,10 +47,8 @@ public class Ball extends PhysicsObject
             Position.x = width/2 - 10;
             Velocity.x = -Velocity.x;
         }
-
-
-
-        DrawVelocity();
+        
+        //DrawVelocity();
     }
 
     //Hit floor
@@ -76,7 +75,7 @@ public class Ball extends PhysicsObject
         if(training)
         {
             Position.x = width/2;
-            //trainingCounter++; //modulate sides
+            trainingCounter++; //modulate sides
             float sideForce = trainingCounter % 2 == 0 ? -1 : 1;
                 AddForce(new PVector(sideForce * random(1,5),-random(5,10))); 
         }

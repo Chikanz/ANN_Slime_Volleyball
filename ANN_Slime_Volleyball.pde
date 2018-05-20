@@ -18,7 +18,7 @@ boolean gameOn = false;
 //float lastBallX[] = 0;
 boolean firstRally = false;
 
-int FrameyRate = 600;
+int FrameyRate = 60;
 
 final PVector[] normalizeVals =
 {
@@ -79,11 +79,19 @@ void draw()
     if(gameOn)
     {
         GameLoop();        
-        if(gameFrames > 1000) gameOn = false; //End round 
+        if(gameFrames > 100000)
+        {
+            gameOn = false; //End round 
+            println("holy fuck");
+            GT.Write();
+        }
     }
     else if(traning)
     {
         println("end game!");
+
+        p1ball.Reset(true);
+        //p2ball.Reset(true);        
 
         //Sum fitness if we just played a round
         if(NN1.GetBrain() != null)
@@ -137,14 +145,14 @@ void GameLoop()
     scene.DrawEnv();
 
     //AI 
-    AIStep(s1,s2, p1ball, 0);
-    AIStep(s2,s1, p2ball, 1);
+    //AIStep(s1,s2, p1ball, 0);
+    AIStep(s2,s1, p1ball, 1);
 
     s1.Update(p1ball.GetPos());    
     s2.Update(p1ball.GetPos());  
 
     p1ball.Update();  
-    p2ball.Update();  
+    //p2ball.Update();  
 
     CM.SendCollisionMessages();  
     RM.Update();
@@ -152,28 +160,35 @@ void GameLoop()
     //reset balls
     if(p1ball.HitFloor()) 
     {
-        s1.score += 1;
+        boolean p1Won = p1ball.PlayerWon();
+        gameOn = !RM.Score(p1Won); //For competitive
+
+        if(p1ball.GetPos().x > width/2) s2.score += 1;
+        if(p1ball.GetPos().x < width/2) s1.score += 1;
+
         p1ball.Reset(true);
+        Reset();
     }
     
-    if(p2ball.HitFloor())
-    {
-        s2.score += 1;
-        p2ball.Reset(true);
-    }
+    //if(p2ball.HitFloor())
+    //{
+    //    s2.score += 1;
+    //    p2ball.Reset(true);
+    //    s2.Reset();
+    //}
 
     //Add score
-    if(p1ball.GetPos().x > width/2 + 10)
-    {
-        s1.rallySecs++; //Add a rally point
-        p1ball.Reset(true);
-    }
-
-    if(p2ball.GetPos().x < width/2 - 10)
-    {
-        s2.rallySecs++; //Add a rally point
-        p2ball.Reset(true);
-    }
+    //if(p1ball.GetPos().x > width/2 + 10)
+    //{
+    //    s1.rallySecs++; //Add a rally point
+    //    p1ball.Reset(true);
+    //}
+//
+    //if(p2ball.GetPos().x < width/2 - 10)
+    //{
+    //    s2.rallySecs++; //Add a rally point
+    //    p2ball.Reset(true);
+    //}
 
     //Check round over
     //if(ball.HitFloor())
@@ -188,7 +203,7 @@ void GameLoop()
 //Slime movement
 void keyPressed()
 {  
-   if(key == 'w') 
+   if(key == 'v') 
    {
        GT.Write();
    }
@@ -197,6 +212,16 @@ void keyPressed()
    {
        FrameyRate =  FrameyRate == 600 ? 60 : 600;
        frameRate(FrameyRate);
+   }
+
+   if(key == 'c')
+   {
+       if(GT.HasNext()) 
+       {
+            println("got next");
+            NN2.LoadBrain(GT.GetNext());
+        Reset();
+       }
    }
 
    s1.KeyBoardInput(keyCode, true);

@@ -75,12 +75,12 @@ public class GeneticTrainer extends Object
         ArrayList<DNA> newPop = new ArrayList<DNA>();
 
         //Add in randoms just for good luck
-        for(int i = 0; i < randomCount; i++)
-        {
-            DNA d = new DNA(connectionCount);
-            d.Randomize();
-            newPop.add(d);        
-        }
+        //for(int i = 0; i < randomCount; i++)
+        //{
+        //    DNA d = new DNA(connectionCount);
+        //    d.Randomize();
+        //    newPop.add(d);        
+        //}
 
         //NormalizeFitness(total);
         InitalizeWheel();        
@@ -122,26 +122,27 @@ public class GeneticTrainer extends Object
         nextCounter = 0;
 
         //For competitive
-        //for(int i = 0; i < populationSize; i++)
-        //{
-        //    for(int j = 0; j < populationSize; j++)
-        //    {
-        //        //Congratulations, you played yourself
-        //        if(population.get(i) == population.get(j)) continue;
-        //
-        //        NextList.add(population.get(i));
-        //        NextList.add(population.get(j));
-        //    }
-        //}
+        for(int i = 0; i < populationSize; i++)
+        {
+            population.get(i).ClearFitness(); //Clear fitness while we'rte here
+            for(int j = 0; j < populationSize; j++)
+            {
+                //Congratulations, you played yourself
+                if(population.get(i) == population.get(j)) continue;
+        
+                NextList.add(population.get(i));
+                NextList.add(population.get(j));
+            }
+        }
 
         //Just add population for ball training
         //Also clear fitness while we're here
-        for(int i = 0; i < population.size(); i++)
-        {
-            DNA d = population.get(i);
-            d.ClearFitness();
-            NextList.add(d);
-        }        
+        //for(int i = 0; i < population.size(); i++)
+        //{
+        //    DNA d = population.get(i);
+        //    d.ClearFitness();
+        //    NextList.add(d);
+        //}        
 
         assert NextList.size() > 0;
     }
@@ -243,5 +244,7 @@ public class GeneticTrainer extends Object
 
             population.add(d);
         }        
+
+        GenerateNextList();
     }
 }

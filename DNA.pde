@@ -4,7 +4,7 @@ public class DNA
 
     private float fitness = 1;    
 
-    public float MutateChance = 0.4f;
+    public float MutateChance = 0.2f;
 
     public int noWeights;
 
@@ -36,13 +36,15 @@ public class DNA
         float myMoveMulti = movedelta > 50 ? 1 : 0;
         //float scoremulti = constrain(playerScore - opponentScore, 0,99);
 
-        fitness += (touches * 0.1f * myMoveMulti) + (rallies * 3 * myMoveMulti) - (playerScore * 2f);// + (ral * 1) + (movedelta * 0.001f) + (playerScore * 2);
+        //fitness += (touches * 0.1f * myMoveMulti) + (rallies * 3 * myMoveMulti) + (10 - playerScore);
+        fitness += (5 - playerScore);
 
         if(fitness < 0) fitness = 0; //just in case
 
         //fitness += (touches * 0.7f * myMoveMulti) + (ral * 1) + (movedelta * 0.001f) + (playerScore * 2);
         
-        println("touch: " +(touches * 1 * myMoveMulti) + " rallies: " + (rallies * 3 * myMoveMulti) + " drops: " + (playerScore * 1));
+        //println("touch: " +(touches * 1 * myMoveMulti) + " rallies: " + (rallies * 3 * myMoveMulti) + " drops: " + (playerScore * 1));
+        println("drops: " + (playerScore));
     }
 
     void NormalizeFitness(float total)
