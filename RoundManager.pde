@@ -9,6 +9,7 @@ public class RoundManager extends Object
         
     }
 
+    //Add a score
     public boolean Score(boolean isp1)
     {
         if(p1Score >= MaxScore || p2Score >= MaxScore) return true; //Return true if game over
@@ -21,12 +22,14 @@ public class RoundManager extends Object
         return false; 
     }
 
+    //Reset the game score
     public void Reset()
     {
         p1Score = 0;
         p2Score = 0;
     }
 
+    //Draw score
     public void Update()
     {
         //Score p1
@@ -44,7 +47,7 @@ public class RoundManager extends Object
             }
         }
 
-        //score p2
+        //Score p2
         for(int i = 0; i < MaxScore; i++)
         {
             if(p2Score > i)

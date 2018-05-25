@@ -2,14 +2,13 @@ import java.util.*;
 
 public class Neuron extends Object 
 {
-
     ArrayList<NNConnection> connections = new ArrayList<NNConnection>();
     private float biasOutput = -50;
     protected float output;
 
     public Neuron() 
     {
-        super();
+        
     }
 
     public Neuron(int bias)
@@ -17,6 +16,7 @@ public class Neuron extends Object
         biasOutput = bias;
     }
 
+    //Calculate the output of this neuron
     public float Fire()
     {
         //Skip processing if we're a bias neuron
@@ -35,6 +35,7 @@ public class Neuron extends Object
         return output;
     }
     
+    //Get last value this neuron calculated
     public float GetCachedOutput()
     {
         return output;
@@ -50,6 +51,7 @@ public class Neuron extends Object
         return 1.0f / (1.0f + (float)Math.exp(-x));
     }
 
+    //Add a connection to this neuron 
     void AddConnection(NNConnection c) 
     {
         connections.add(c);

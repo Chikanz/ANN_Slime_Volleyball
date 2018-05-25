@@ -10,10 +10,12 @@ public class NeuralNetwork extends Object
 
     public int GlobalConnectionCount;
 
+    //Layers
     private ArrayList<InputNeuron> Inputs = new ArrayList<InputNeuron>();
     private ArrayList<Neuron> Hidden = new ArrayList<Neuron>();
     private ArrayList<Neuron> Outputs = new ArrayList<Neuron>();
 
+    //list of all of the weights in the network
     private ArrayList<NNConnection> globalConnections = new ArrayList<NNConnection>();
 
     public NeuralNetwork (int input, int hidden, int output)
@@ -68,7 +70,7 @@ public class NeuralNetwork extends Object
             }
         }
 
-        println("GLobal connection size is :" + globalConnections.size());
+        println("Global connection size is :" + globalConnections.size());
         GlobalConnectionCount = globalConnections.size();
     }
 

@@ -10,7 +10,7 @@ public class Ball extends PhysicsObject
         Gravity = 0.2;
 
         Position.x = (width/2)/2;
-        Reset(true);
+        Reset(training);        
     }
 
     void Update()
@@ -72,6 +72,7 @@ public class Ball extends PhysicsObject
         Stop(0,0);
         Position.y = PhysicsObject.Ground - 150;
 
+        //Lob the ball from the center of the net
         if(training)
         {
             Position.x = width/2;
@@ -81,7 +82,7 @@ public class Ball extends PhysicsObject
         }
         else
         {
-            int playerNo = PlayerWon() ? 0 : 1;
+            int playerNo = PlayerWon() ? 1 : 0;
             //Position.y = PhysicsObject.Ground - 150;
 
             if(playerNo == 0)

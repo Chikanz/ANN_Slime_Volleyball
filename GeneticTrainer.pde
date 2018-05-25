@@ -1,6 +1,6 @@
 import java.util.*;
 
-
+//Class used for training
 public class GeneticTrainer extends Object
 {
     int populationSize = 5;
@@ -52,7 +52,6 @@ public class GeneticTrainer extends Object
             public int compare(DNA a, DNA b) 
             {
                 return Math.round(b.GetFitness() - a.GetFitness());
-                //return a.GetFitness() < b.GetFitness() ? 1 : a.GetFitness() == b.GetFitness() ? 0 : -1;
             }
         });    
 
@@ -74,15 +73,15 @@ public class GeneticTrainer extends Object
         
         ArrayList<DNA> newPop = new ArrayList<DNA>();
 
-        //Add in randoms just for good luck
+        //Add in randoms just for good luck (commented out for later training rounds when it's not nessicary)
         //for(int i = 0; i < randomCount; i++)
         //{
         //    DNA d = new DNA(connectionCount);
         //    d.Randomize();
         //    newPop.add(d);        
         //}
-
         //NormalizeFitness(total);
+
         InitalizeWheel();        
 
         for(int i = 0; i < populationSize; i++)
@@ -100,11 +99,7 @@ public class GeneticTrainer extends Object
             newPop.add(kiddo);
         }        
 
-        //Clear population every 2 gens, to keep parents.
-        //This way if children perform worse than parents, the parents' good DNA is kept
-        //if(generation % 2 == 0)
-        //population.clear();
-
+        //Add kids into population
         for(int i = 0; i < newPop.size(); i++)
         {
             population.add(newPop.get(i));
@@ -116,6 +111,7 @@ public class GeneticTrainer extends Object
         println("Generation size: " + population.size());
     }
     
+    //Make a list of which DNA we want to train, ie round robin or a population list
     private void GenerateNextList()
     {
         NextList.clear();
@@ -124,7 +120,7 @@ public class GeneticTrainer extends Object
         //For competitive
         for(int i = 0; i < populationSize; i++)
         {
-            population.get(i).ClearFitness(); //Clear fitness while we'rte here
+            population.get(i).ClearFitness(); //Clear fitness while we're here
             for(int j = 0; j < populationSize; j++)
             {
                 //Congratulations, you played yourself
@@ -147,11 +143,13 @@ public class GeneticTrainer extends Object
         assert NextList.size() > 0;
     }
 
+    //Check if we have another slime to give
     public Boolean HasNext()
     {
         return nextCounter <  NextList.size();
     }
     
+    //Get the next slime from the next list
     public DNA GetNext()
     {        
         assert NextList.size() > 0;     
@@ -161,14 +159,15 @@ public class GeneticTrainer extends Object
         
     }
 
-    void NormalizeFitness(float total)
-    {
-        for(int i= 0; i < population.size(); i++)
-        {
-            DNA d = population.get(i); 
-            d.NormalizeFitness(total);
-        }
-    }
+    //No longer used due to how wheel is implemented
+    //void NormalizeFitness(float total)
+    //{
+    //    for(int i= 0; i < population.size(); i++)
+    //    {
+    //        DNA d = population.get(i); 
+    //        d.NormalizeFitness(total);
+    //    }
+    //}
 
     //Initalize fitness based chance wheel
     void InitalizeWheel()
@@ -207,6 +206,7 @@ public class GeneticTrainer extends Object
         return d;
     }
 
+    //Write weights out to file
     void Write()
     {
         String[] s = new String[population.size()];
@@ -222,7 +222,8 @@ public class GeneticTrainer extends Object
         saveStrings("weights.txt", s);
     }
 
-     void Read(int geneCount)
+    //Read weights from file
+    void Read(int geneCount)
     {        
         population.clear();
         String[] lines = loadStrings("weights.txt");
@@ -234,8 +235,8 @@ public class GeneticTrainer extends Object
             DNA d = new DNA(geneCount);
             float[] vals = float(split(lines[i],','));
 
-            println(geneCount + " " + vals.length);
-            assert geneCount == vals.length - 1;
+            //println(geneCount + " " + vals.length);
+            assert geneCount == vals.length - 1; //make sure we're reading in the right DNA
 
             for(int j = 0; j < vals.length - 1; j++)            
             {

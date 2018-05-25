@@ -6,7 +6,7 @@ public class DNA
 
     public float MutateChance = 0.2f;
 
-    public int noWeights;
+    public int noWeights; //Number of weights in the network
 
     public DNA (int noWeights) 
     {
@@ -29,22 +29,23 @@ public class DNA
         fitness = 1;
     }
 
+    //Fitness function, with past functions commented 
     void AddFitness(int touches, float rallies, float movedelta, int playerScore, int opponentScore)
     {
-        //fitness += constrain(playerScore - opponentScore, 0,99);
-        //Gates          
+        //Gates (won't count fitness unless condition is met)
         float myMoveMulti = movedelta > 50 ? 1 : 0;
+
         //float scoremulti = constrain(playerScore - opponentScore, 0,99);
 
+        //fitness += (touches * 0.7f * myMoveMulti) + (ral * 1) + (movedelta * 0.001f) + (playerScore * 2);
         //fitness += (touches * 0.1f * myMoveMulti) + (rallies * 3 * myMoveMulti) + (10 - playerScore);
         fitness += (5 - playerScore);
 
         if(fitness < 0) fitness = 0; //just in case
 
-        //fitness += (touches * 0.7f * myMoveMulti) + (ral * 1) + (movedelta * 0.001f) + (playerScore * 2);
-        
+        //Debug
         //println("touch: " +(touches * 1 * myMoveMulti) + " rallies: " + (rallies * 3 * myMoveMulti) + " drops: " + (playerScore * 1));
-        println("drops: " + (playerScore));
+        //println("drops: " + (playerScore));
     }
 
     void NormalizeFitness(float total)
@@ -82,9 +83,5 @@ public class DNA
                 weights[i] = random(-1.0, 1.0);
             }
         }
-    }
-
-    //Score as a fitness values isn't ideal because it's relative - it's valued by how well you do against an opponent
-    //You could have a nerual net that 
-
+    }    
 }

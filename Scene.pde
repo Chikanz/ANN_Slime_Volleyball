@@ -1,3 +1,4 @@
+//Simple class to draw the scene
 public class Scene extends Object {
 
     public Scene () 

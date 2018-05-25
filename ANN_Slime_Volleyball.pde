@@ -10,15 +10,15 @@ NeuralNetwork NN1;
 NeuralNetwork NN2;
 GeneticTrainer GT;
 
-boolean traning = true;
+boolean training = false;
 
 float gameFrames = 0;
 
 boolean gameOn = false;
-//float lastBallX[] = 0;
-boolean firstRally = false;
 
 int FrameyRate = 60;
+
+boolean p1IsAI = false;
 
 final PVector[] normalizeVals =
 {
@@ -66,12 +66,14 @@ void setup()
   //NN1 = new NeuralNetwork(12,8,3);
   //NN2 = new NeuralNetwork(12,8,3);
 
-  //
+  //81
   NN1 = new NeuralNetwork(8,7,3);
   NN2 = new NeuralNetwork(8,7,3);
 
   GT = new GeneticTrainer(NN1.GlobalConnectionCount);
   GT.Read(NN1.GlobalConnectionCount);
+
+  if(!training) LoadBrains(); //Load in AIs
 }
 
 void draw()
@@ -79,56 +81,47 @@ void draw()
     if(gameOn)
     {
         GameLoop();        
-        if(gameFrames > 100000)
+        if(gameFrames > 100000 && training)
         {
-            gameOn = false; //End round 
-            println("holy fuck");
+            gameOn = false; //End round             
             GT.Write();
         }
     }
-    else if(traning)
+    else
     {
         println("end game!");
 
-        p1ball.Reset(true);
-        //p2ball.Reset(true);        
+        if(training)
+        {
+            //Sum fitness if we just played a round
+            if(NN1.GetBrain() != null)
+            {            
+                DNA d1 = NN1.GetBrain();
+                DNA d2 = NN2.GetBrain();                        
 
-        //Sum fitness if we just played a round
-        if(NN1.GetBrain() != null)
-        {            
-            DNA d1 = NN1.GetBrain();
-            DNA d2 = NN2.GetBrain();                        
+                d1.AddFitness(s1.touches, s1.rallySecs, s1.movedelta, s1.score, RM.p2Score);
+                d2.AddFitness(s2.touches, s2.rallySecs, s2.movedelta, s2.score, RM.p1Score);
 
-            d1.AddFitness(s1.touches, s1.rallySecs, s1.movedelta, s1.score, RM.p2Score);
-            d2.AddFitness(s2.touches, s2.rallySecs, s2.movedelta, s2.score, RM.p1Score);
+                s1.ResetStats();
+                s2.ResetStats();
+            }
             
-            s1.ResetStats();
-            s2.ResetStats();
+            LoadBrains();
+
+            //Next generation if we've played all rounds in this gen
+            if(!GT.HasNext())
+            {
+                println("next gen!");
+                GT.NextGeneration();
+            }
+
+            
         }
 
-        //Next generation if we've played all rounds in this gen
-        if(!GT.HasNext())
-        {
-            println("next gen!");
-            GT.NextGeneration();
-        }
-        
-        DNA p1 = GT.GetNext();
-        NN1.LoadBrain(p1);
-
-        if(GT.HasNext())
-        {
-            DNA p2 = GT.GetNext();
-            NN2.LoadBrain(p2);
-        }
-        else
-        {
-            NN2.LoadBrain(new DNA(NN1.GlobalConnectionCount));
-        }
-
-        gameFrames = 0;
-
-        //lastBallX = ball.GetPos().x;
+        //Resetti tha spaghetti
+        gameFrames = 0;    
+        p1ball.Reset(training);
+        //p2ball.Reset(true);        
 
         RM.Reset();
         Reset();
@@ -139,25 +132,23 @@ void draw()
 void GameLoop()
 {
     gameFrames++;
-
     background(0, 204, 255);
-
     scene.DrawEnv();
 
-    //AI 
-    //AIStep(s1,s2, p1ball, 0);
+    //AI logic
+    if(p1IsAI || training) AIStep(s1,s2, p1ball, 0);
     AIStep(s2,s1, p1ball, 1);
 
     s1.Update(p1ball.GetPos());    
     s2.Update(p1ball.GetPos());  
 
     p1ball.Update();  
-    //p2ball.Update();  
+    //p2ball.Update();  //Two balls were used in training
 
     CM.SendCollisionMessages();  
     RM.Update();
 
-    //reset balls
+    //end round
     if(p1ball.HitFloor()) 
     {
         boolean p1Won = p1ball.PlayerWon();
@@ -166,10 +157,11 @@ void GameLoop()
         if(p1ball.GetPos().x > width/2) s2.score += 1;
         if(p1ball.GetPos().x < width/2) s1.score += 1;
 
-        p1ball.Reset(true);
+        p1ball.Reset(training);
         Reset();
     }
     
+    //Past rally training
     //if(p2ball.HitFloor())
     //{
     //    s2.score += 1;
@@ -200,21 +192,21 @@ void GameLoop()
     //}
 }
 
-//Slime movement
 void keyPressed()
 {  
-   if(key == 'v') 
-   {
-       GT.Write();
-   }
+   //Bindings
+   //if(key == 'v') //write out weights
+   //{
+   //    GT.Write();
+   //}
 
-   if(key == 'f') 
+   if(key == 'f') //Toggle frame rate for training
    {
        FrameyRate =  FrameyRate == 600 ? 60 : 600;
        frameRate(FrameyRate);
    }
 
-   if(key == 'c')
+   if(key == 'c') //Get next AI from population
    {
        if(GT.HasNext()) 
        {
@@ -224,6 +216,12 @@ void keyPressed()
        }
    }
 
+   if(key == 'm') //let AI take over player1
+   {
+       p1IsAI = !p1IsAI;
+   }
+
+    //Player input if not controled by AI
    s1.KeyBoardInput(keyCode, true);
    s2.KeyBoardInput(keyCode, true);
 }
@@ -241,6 +239,7 @@ void Reset()
     //ball.Reset(true);
 }
 
+//AI logic
 void AIStep(Slime player, Slime opponent, Ball b, int playerNO)
 {
     //Feed inputs
@@ -289,6 +288,7 @@ void AIStep(Slime player, Slime opponent, Ball b, int playerNO)
     //Feed input into network
     float[] out = playerNO == 0 ? NN1.FeedForward(in) : NN2.FeedForward(in);      
 
+    //Debug
     //for(int i = 0; i <  in.length; i++)
     //{        
     //    text(playerNO + " " + InHeaders[i] + " " + in[i], ((width - 200) * playerNO) + 100 , (10 * i) + 100);
@@ -306,5 +306,21 @@ void AIStep(Slime player, Slime opponent, Ball b, int playerNO)
         player.KeyBoardInput(RIGHT, out[0] > 0.5);
         player.KeyBoardInput(LEFT, out[1] >  0.5);
         player.KeyBoardInput(UP, out[2] >    0.5);
+    }   
+}
+
+ void LoadBrains()
+{
+    DNA p1 = GT.GetNext();
+    NN1.LoadBrain(p1);
+    
+    if(GT.HasNext())
+    {
+        DNA p2 = GT.GetNext();
+        NN2.LoadBrain(p2);
+    }
+    else
+    {
+        NN2.LoadBrain(new DNA(NN1.GlobalConnectionCount));
     }
 }

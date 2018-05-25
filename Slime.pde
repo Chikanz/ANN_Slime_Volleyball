@@ -54,7 +54,7 @@ public class Slime extends PhysicsObject
 
         ProcessInput(); //Act on keyboard input
 
-        //Update parent
+        //Update physics
         super.Update();
 
         //Check canJump
@@ -64,7 +64,6 @@ public class Slime extends PhysicsObject
         //Draw slime
         if(playerNo == 0) fill(255,0,0);
         else fill(0,255,0);
-
         arc(Position.x, Position.y, thiccness, thiccness, PI, TWO_PI, PIE);
 
         //Draw eye base
@@ -76,6 +75,7 @@ public class Slime extends PhysicsObject
 
         //DrawVelocity();    
 
+        //For stats
         movedelta += Math.abs(Velocity.x);
 
         LookAt(lookAtTarget);

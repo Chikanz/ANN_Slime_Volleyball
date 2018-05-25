@@ -1,3 +1,4 @@
+//Sends out collision messages
 public class CollisionManager extends Object
 {
     public ArrayList<PhysicsObject> objects = new ArrayList<PhysicsObject>();
